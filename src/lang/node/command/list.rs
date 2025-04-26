@@ -28,3 +28,17 @@ pub fn remote_execute() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+pub fn all_remote_execute() -> Result<(), Box<dyn std::error::Error>> {
+    let version = fetch_version()?;
+    for v in &version {
+        println!(
+            "{} - {} {}",
+            v.version,
+            v.date,
+            v.lts.as_deref().unwrap_or("")
+        );
+    }
+
+    Ok(())
+}

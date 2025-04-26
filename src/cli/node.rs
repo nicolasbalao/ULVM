@@ -20,6 +20,9 @@ pub enum NodeCommands {
     List {
         #[arg(short, long)]
         remote: bool,
+
+        #[arg(short, long)]
+        all: bool,
     },
     Uninstall {
         #[arg()]

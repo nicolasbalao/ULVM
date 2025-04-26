@@ -17,9 +17,11 @@ fn main() {
             NodeCommands::Use { version } => {
                 println!("Using Node.js version {version}");
             }
-            NodeCommands::List { remote } => {
-                if remote {
+            NodeCommands::List { remote, all } => {
+                if remote && !all {
                     let _ = lang::node::command::list::remote_execute();
+                } else if remote && all {
+                    let _ = lang::node::command::list::all_remote_execute();
                 } else {
                     println!("Listing local node.js versions...")
                 }
