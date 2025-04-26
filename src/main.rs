@@ -1,6 +1,9 @@
 use clap::Parser;
 
 mod cli;
+mod core;
+mod lang;
+
 use cli::{Cli, Commands, node::NodeCommands};
 
 fn main() {
@@ -16,7 +19,7 @@ fn main() {
             }
             NodeCommands::List { remote } => {
                 if remote {
-                    println!("Listing remote node.js versions...")
+                    let _ = lang::node::command::list::remote_execute();
                 } else {
                     println!("Listing local node.js versions...")
                 }
