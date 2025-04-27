@@ -12,7 +12,12 @@ fn main() {
     match cli_arg.command {
         Commands::Node(node_args) => match node_args.command {
             NodeCommands::Install { version } => {
-                println!("Installing Node.js version {version}");
+                let result = lang::node::command::install::execute(&version);
+
+                match result {
+                    Ok(_) => println!("Succesfully install node version : {version}"),
+                    Err(e) => eprintln!("Error occured: {:?}", e),
+                }
             }
             NodeCommands::Use { version } => {
                 println!("Using Node.js version {version}");
