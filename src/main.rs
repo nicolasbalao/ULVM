@@ -3,6 +3,7 @@ use clap::Parser;
 mod cli;
 mod core;
 mod lang;
+mod platform;
 
 use cli::{Cli, Commands, node::NodeCommands};
 
@@ -12,11 +13,9 @@ fn main() {
     match cli_arg.command {
         Commands::Node(node_args) => match node_args.command {
             NodeCommands::Install { version } => {
-                let result = lang::node::command::install::execute(&version);
-
-                match result {
-                    Ok(_) => println!("Succesfully install node version : {version}"),
-                    Err(e) => eprintln!("Error occured: {:?}", e),
+                if let Err(e) = lang::node::command::install::execute(&version) {
+                    eprintln!("{}", e);
+                    std::process::exit(1);
                 }
             }
             NodeCommands::Use { version } => {

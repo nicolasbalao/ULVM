@@ -1,96 +1,75 @@
-use std::{
-    fs::{self, File},
-    io::Write,
-    path::PathBuf,
+use std::fs::{self};
+
+use crate::{
+    core::{
+        archive::{ArchiveError, extract_tar_gz},
+        downloads::{DownloadError, download_file},
+        fs::{FsError, ensure_node_downloads_dir, ensure_node_versions_dir},
+    },
+    platform::{detect_arch, detect_plateform},
 };
 
-use flate2::read::GzDecoder;
-use tar::Archive;
+use thiserror::Error;
 
-pub fn execute(version: &str) -> Result<(), Box<dyn std::error::Error>> {
+#[derive(Debug, Error)]
+pub enum InstallError {
+    #[error("Error filesystem handling: {0}")]
+    Fs(#[from] FsError),
+
+    #[error("Error occured while downloading: {0}")]
+    Download(#[from] DownloadError),
+
+    #[error("Archive error: {0}")]
+    Archive(#[from] ArchiveError),
+
+    #[error("System error: {0}")]
+    Io(#[from] std::io::Error),
+}
+
+pub fn execute(version: &str) -> Result<(), InstallError> {
     println!("Installation node.js {version} ...");
+    let destination_path = ensure_node_versions_dir()?.join(version);
+    if destination_path.exists() {
+        println!(
+            "Nodejs {} is already installed at: {}",
+            version,
+            destination_path.display()
+        );
+        return Ok(());
+    }
 
     let plateform = detect_plateform();
     let arch = detect_arch(); // x64, arm64
 
-    let url = build_node_url(version, &plateform, &arch);
+    let url = build_download_node_url(version, &plateform, &arch);
+    let archive_path = ensure_node_downloads_dir()?.join(format!(
+        "node-{v}-{plateform}-{arch}.tar.gz",
+        v = version,
+        plateform = plateform,
+        arch = arch
+    ));
 
-    println!("Dowloading Node.js from {url}");
+    if archive_path.exists() {
+        println!("Archive already exist skip downloading")
+    } else {
+        println!("Dowloading Node.js from {url}");
+        download_file(&url, &archive_path)?;
+    }
 
-    let source_path = download_archive(&url)?;
-    println!("Source path : {:?}", source_path);
-
-    let destination_path =
-        PathBuf::new().join(format!("/home/nicolas/.ulvm/node/{v}", v = version));
-
-    println!("create dir : {:?}", &destination_path);
     fs::create_dir(&destination_path)?;
 
-    println!("Destination path: {:?}", &destination_path);
-    extract_archive(&source_path, &destination_path)?;
-    // tmp_dir.close()?;
+    extract_tar_gz(&archive_path, &destination_path)?;
+
+    println!(
+        "Nodejs {} is installed at: {}",
+        version,
+        destination_path.display()
+    );
 
     Ok(())
 }
 
-fn extract_archive<'a>(
-    source_path: &PathBuf,
-    destination_path: &'a PathBuf,
-) -> Result<&'a PathBuf, Box<dyn std::error::Error>> {
-    let archive_file = File::open(source_path)?;
-    let mut archive = Archive::new(GzDecoder::new(archive_file));
-
-    archive
-        .entries()?
-        .filter_map(|e| e.ok())
-        .map(|mut entry| -> Result<PathBuf, Box<dyn std::error::Error>> {
-            let path = entry.path()?;
-
-            let mut components = path.components();
-            components.next();
-
-            let new_path = components.as_path().to_path_buf();
-            if new_path.as_os_str().is_empty() {
-                return Ok(new_path);
-            }
-
-            let final_path = destination_path.join(new_path);
-
-            entry.unpack(&final_path)?;
-            Ok(final_path)
-        })
-        .filter_map(|e| e.ok())
-        .for_each(|x| println!("> {}", x.display()));
-
-    Ok(destination_path)
-}
-
-fn download_archive(url: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
-    // let tmp_dir = Builder::new().prefix("node-download").tempdir()?;
-    let tmp_dir = PathBuf::from("/tmp/node-version");
-
-    let response = reqwest::blocking::get(url)?;
-
-    let fname = response
-        .url()
-        .path_segments()
-        .and_then(|mut segment| segment.next_back())
-        .and_then(|name| if name.is_empty() { None } else { Some(name) })
-        .unwrap();
-
-    println!("File to download {fname}");
-    let fname = tmp_dir.join(fname);
-
-    println!("Will be located under: {:?}", fname);
-    let mut dest = File::create(&fname)?;
-
-    let content = response.bytes()?;
-    dest.write_all(&content)?;
-    Ok(fname)
-}
-
-fn build_node_url(version: &str, plateform: &str, arch: &str) -> String {
-    // https://nodejs.org/download/release/v22.15.0/
+fn build_download_node_url(version: &str, plateform: &str, arch: &str) -> String {
     let base_url = "https://nodejs.org/download/release";
 
     format!(
@@ -101,12 +80,4 @@ fn build_node_url(version: &str, plateform: &str, arch: &str) -> String {
         arch = if arch == "x86_64" { "x64" } else { "arm64" },
         ext = if plateform == "win" { "zip" } else { "tar.gz" }
     )
-}
-
-fn detect_arch() -> String {
-    std::env::consts::ARCH.to_string()
-}
-
-fn detect_plateform() -> String {
-    std::env::consts::OS.to_string()
 }
