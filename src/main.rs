@@ -19,7 +19,10 @@ fn main() {
                 }
             }
             NodeCommands::Use { version } => {
-                println!("Using Node.js version {version}");
+                if let Err(e) = lang::node::command::r#use::execute(&version) {
+                    eprintln!("{}", e);
+                    std::process::exit(1);
+                }
             }
             NodeCommands::List { remote, all } => {
                 if remote && !all {
