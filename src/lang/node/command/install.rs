@@ -77,7 +77,7 @@ fn build_download_node_url(version: &str, plateform: &str, arch: &str) -> String
         base_url = base_url,
         v = version,
         plateform = plateform,
-        arch = if arch == "x86_64" { "x64" } else { "arm64" },
+        arch = arch,
         ext = if plateform == "win" { "zip" } else { "tar.gz" }
     )
 }

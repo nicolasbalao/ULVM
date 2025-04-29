@@ -1,7 +1,17 @@
 [package]
-name = "ULVM"
+name = "ulvm"
 version = "0.1.0"
 edition = "2024"
+
+default-run = "ulvm"
+
+[[bin]]
+name = "ulvm"
+path = "src/main.rs"
+
+[[bin]]
+name = "ulvm_shim"
+path = "src/bin/shim.rs"
 
 [dependencies]
 clap = { version = "4.5.37", features = ["derive"] }

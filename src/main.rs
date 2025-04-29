@@ -1,41 +1,5 @@
-use clap::Parser;
-
-mod cli;
-mod core;
-mod lang;
-mod platform;
-
-use cli::{Cli, Commands, node::NodeCommands};
+use ulvm::cli;
 
 fn main() {
-    let cli_arg = Cli::parse();
-
-    match cli_arg.command {
-        Commands::Node(node_args) => match node_args.command {
-            NodeCommands::Install { version } => {
-                if let Err(e) = lang::node::command::install::execute(&version) {
-                    eprintln!("{}", e);
-                    std::process::exit(1);
-                }
-            }
-            NodeCommands::Use { version } => {
-                if let Err(e) = lang::node::command::r#use::execute(&version) {
-                    eprintln!("{}", e);
-                    std::process::exit(1);
-                }
-            }
-            NodeCommands::List { remote, all } => {
-                if remote && !all {
-                    let _ = lang::node::command::list::remote_execute();
-                } else if remote && all {
-                    let _ = lang::node::command::list::all_remote_execute();
-                } else {
-                    println!("Listing local node.js versions...")
-                }
-            }
-            NodeCommands::Uninstall { version } => {
-                println!("Uninstall node.js version {version}")
-            }
-        },
-    }
+    cli::run();
 }

@@ -1,6 +1,8 @@
 pub mod node;
 use clap::{Parser, Subcommand, command};
-use node::NodeArgs;
+use node::{NodeArgs, NodeCommands};
+
+use crate::lang;
 
 #[derive(Parser, Debug)]
 #[command(name = "ULVM", version, about = "Version manager")]
@@ -12,4 +14,37 @@ pub struct Cli {
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     Node(NodeArgs),
+}
+
+pub fn run() {
+    let cli_arg = Cli::parse();
+
+    match cli_arg.command {
+        Commands::Node(node_args) => match node_args.command {
+            NodeCommands::Install { version } => {
+                if let Err(e) = lang::node::command::install::execute(&version) {
+                    eprintln!("{}", e);
+                    std::process::exit(1);
+                }
+            }
+            NodeCommands::Use { version } => {
+                if let Err(e) = lang::node::command::r#use::execute(&version) {
+                    eprintln!("{}", e);
+                    std::process::exit(1);
+                }
+            }
+            NodeCommands::List { remote, all } => {
+                if remote && !all {
+                    let _ = lang::node::command::list::remote_execute();
+                } else if remote && all {
+                    let _ = lang::node::command::list::all_remote_execute();
+                } else {
+                    println!("Listing local node.js versions...")
+                }
+            }
+            NodeCommands::Uninstall { version } => {
+                println!("Uninstall node.js version {version}")
+            }
+        },
+    }
 }

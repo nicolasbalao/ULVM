@@ -3,23 +3,6 @@
 version = 4
 
 [[package]]
-name = "ULVM"
-version = "0.1.0"
-dependencies = [
- "clap",
- "dirs",
- "flate2",
- "reqwest",
- "rusty-hook",
- "serde",
- "serde_json",
- "tar",
- "tempfile",
- "thiserror",
- "toml 0.8.21",
-]
-
-[[package]]
 name = "addr2line"
 version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1539,6 +1522,23 @@ name = "try-lock"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
+
+[[package]]
+name = "ulvm"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "dirs",
+ "flate2",
+ "reqwest",
+ "rusty-hook",
+ "serde",
+ "serde_json",
+ "tar",
+ "tempfile",
+ "thiserror",
+ "toml 0.8.21",
+]
 
 [[package]]
 name = "unicode-ident"
