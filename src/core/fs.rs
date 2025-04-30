@@ -61,9 +61,14 @@ pub fn create_exec_symlink(version_path: &Path) -> Result<(), FsError> {
     }
 
     for name in exec_names {
-        let symlink_link = ulvm_bin_dir.join(name);
+        let symlink_link = ulvm_bin_dir.join(&name);
 
         if !symlink_link.exists() {
+            println!(
+                "Creating symlink for exec {} to {}",
+                name.into_string().unwrap(),
+                symlink_link.display()
+            );
             std::os::unix::fs::symlink(&shim_exec, &symlink_link)?;
         }
     }

@@ -1,3 +1,5 @@
+use std::env;
+
 use thiserror::Error;
 
 use crate::core::{
@@ -5,7 +7,10 @@ use crate::core::{
         errors::UlvmConfigError,
         ulvm_config::{NodeConfig, UlvmConfig},
     },
-    fs::{self as ulvm_fs, FsError, create_exec_symlink, ensure_node_versions_dir},
+    fs::{
+        self as ulvm_fs, FsError, create_exec_symlink, ensure_node_versions_dir,
+        ensure_ulvm_bin_dir,
+    },
 };
 
 use super::install::{self, InstallError};
@@ -56,5 +61,15 @@ pub fn execute(version: &str) -> Result<(), UseError> {
 
     println!("Now using Node.js version: {version}");
 
+    let path_env_var = env::var("PATH").unwrap();
+
+    let ulvm_bin_dir = ensure_ulvm_bin_dir()?;
+    if !path_env_var.contains(ulvm_bin_dir.to_str().unwrap()) {
+        println!(
+            "Dont forget to add {} to your $PATH",
+            ulvm_bin_dir.display()
+        );
+        println!("export PATH=\"{}:$PATH\"", ulvm_bin_dir.display());
+    }
     Ok(())
 }
