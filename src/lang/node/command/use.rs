@@ -5,7 +5,7 @@ use crate::core::{
         errors::UlvmConfigError,
         ulvm_config::{NodeConfig, UlvmConfig},
     },
-    fs::{self as ulvm_fs, FsError},
+    fs::{self as ulvm_fs, FsError, create_exec_symlink, ensure_node_versions_dir},
 };
 
 use super::install::{self, InstallError};
@@ -50,6 +50,9 @@ pub fn execute(version: &str) -> Result<(), UseError> {
     });
 
     config.save()?;
+
+    let version_path = ensure_node_versions_dir()?.join(version);
+    create_exec_symlink(&version_path)?;
 
     println!("Now using Node.js version: {version}");
 

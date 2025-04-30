@@ -30,6 +30,42 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .join("bin")
                 .join("node")
         }
+        "npm" => {
+            let version = ulvm_config.node.unwrap().version;
+            // TODO handle if the version doesn't exist
+            ensure_node_versions_dir()
+                .unwrap_or_else(|e| {
+                    eprintln!("Error while finding the version bin: {}", e);
+                    std::process::exit(1);
+                })
+                .join(version)
+                .join("bin")
+                .join("npm")
+        }
+        "npx" => {
+            let version = ulvm_config.node.unwrap().version;
+            // TODO handle if the version doesn't exist
+            ensure_node_versions_dir()
+                .unwrap_or_else(|e| {
+                    eprintln!("Error while finding the version bin: {}", e);
+                    std::process::exit(1);
+                })
+                .join(version)
+                .join("bin")
+                .join("npx")
+        }
+        "corepack" => {
+            let version = ulvm_config.node.unwrap().version;
+            // TODO handle if the version doesn't exist
+            ensure_node_versions_dir()
+                .unwrap_or_else(|e| {
+                    eprintln!("Error while finding the version bin: {}", e);
+                    std::process::exit(1);
+                })
+                .join(version)
+                .join("bin")
+                .join("corepack")
+        }
         _ => panic!("Unsupported shim: {}", shim_name),
     };
 
