@@ -21,6 +21,11 @@ pub fn execute(version: &str, hard: bool) -> Result<(), UninstallError> {
     // Delete version directory
     let version_path = ensure_node_versions_dir()?.join(version);
 
+    if !version_path.exists() {
+        println!("Nodejs {} is not installed", version);
+        return Ok(());
+    }
+
     // Check if current version
     let mut base_config = UlvmConfig::load_base()?;
 
