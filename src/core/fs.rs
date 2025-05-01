@@ -71,7 +71,8 @@ pub fn create_exec_symlink(version_path: &Path) -> Result<(), FsError> {
                 name.into_string().unwrap(),
                 symlink_link.display()
             );
-            std::os::unix::fs::symlink(&shim_exec, &symlink_link)?;
+
+            create_symlink(&shim_exec, &symlink_link)?;
         }
     }
 
@@ -137,4 +138,27 @@ fn ensure_versions_dir() -> Result<PathBuf, FsError> {
 fn ensure_downloads_dir() -> Result<PathBuf, FsError> {
     let dir = ensure_ulvm_home_dir()?.join("downloads");
     ensure_dir(dir)
+}
+
+#[cfg(unix)]
+pub fn create_symlink<P, Q>(original: P, link: Q) -> io::Result<()>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+{
+    std::os::unix::fs::symlink(original, link)
+}
+
+#[cfg(windows)]
+pub fn create_symlink<P, Q>(original: P, link: Q) -> io::Result<()>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+{
+    let original_path = original.as_ref();
+    if original_path.is_dir() {
+        std::os::windows::fs::symlink_dir(original_path, link)
+    } else {
+        std::os::windows::fs::symlink_file(original_path, link)
+    }
 }
