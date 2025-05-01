@@ -1,6 +1,6 @@
 use std::{env, process::Command};
 
-use ulvm::core::{config::ulvm_config::UlvmConfig, fs::ensure_node_versions_dir};
+use ulvm::core::{config::ulvm_config::UlvmConfig, fs::exec_node_file_path};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let shim_name = env::args()
@@ -17,55 +17,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         std::process::exit(1);
     });
 
+    let version = ulvm_config.node.unwrap().version;
     let binary_path = match shim_name.as_str() {
-        "node" => {
-            let version = ulvm_config.node.unwrap().version;
+        "node" | "node.exe" => {
             // TODO handle if the version doesn't exist
-            ensure_node_versions_dir()
-                .unwrap_or_else(|e| {
-                    eprintln!("Error while finding the version bin: {}", e);
-                    std::process::exit(1);
-                })
-                .join(version)
-                .join("bin")
-                .join("node")
+            exec_node_file_path(&version, &shim_name)?
         }
-        "npm" => {
-            let version = ulvm_config.node.unwrap().version;
-            // TODO handle if the version doesn't exist
-            ensure_node_versions_dir()
-                .unwrap_or_else(|e| {
-                    eprintln!("Error while finding the version bin: {}", e);
-                    std::process::exit(1);
-                })
-                .join(version)
-                .join("bin")
-                .join("npm")
-        }
-        "npx" => {
-            let version = ulvm_config.node.unwrap().version;
-            // TODO handle if the version doesn't exist
-            ensure_node_versions_dir()
-                .unwrap_or_else(|e| {
-                    eprintln!("Error while finding the version bin: {}", e);
-                    std::process::exit(1);
-                })
-                .join(version)
-                .join("bin")
-                .join("npx")
-        }
-        "corepack" => {
-            let version = ulvm_config.node.unwrap().version;
-            // TODO handle if the version doesn't exist
-            ensure_node_versions_dir()
-                .unwrap_or_else(|e| {
-                    eprintln!("Error while finding the version bin: {}", e);
-                    std::process::exit(1);
-                })
-                .join(version)
-                .join("bin")
-                .join("corepack")
-        }
+        "npm" | "npm.cmd" => exec_node_file_path(&version, &shim_name)?,
+        "npx" | "npx.cmd" => exec_node_file_path(&version, &shim_name)?,
+        "corepack" | "corepack.cmd" => exec_node_file_path(&version, &shim_name)?,
         _ => panic!("Unsupported shim: {}", shim_name),
     };
 

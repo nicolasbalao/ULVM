@@ -42,7 +42,7 @@ pub fn execute(version: &str, hard: bool) -> Result<(), UninstallError> {
         println!("Nodejs {} is your current version", &version);
         base_config.node = None;
         base_config.save()?;
-        remove_symlink_for_version(&version_path)?;
+        remove_symlink_for_version(version)?;
     }
 
     // If hard delete archive

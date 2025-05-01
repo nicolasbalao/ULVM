@@ -2,11 +2,12 @@ use std::{
     ffi::OsString,
     fs::{self},
     io,
-    os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
 };
 
 use thiserror::Error;
+
+use crate::platform::detect_plateform;
 
 use super::archive::build_archive_name;
 
@@ -51,12 +52,32 @@ pub fn ensure_dir(dir: PathBuf) -> Result<PathBuf, FsError> {
     Ok(dir)
 }
 
+pub fn bin_node_version_exec_dir(version: &str) -> Result<PathBuf, FsError> {
+    let version_path = ensure_node_versions_dir()?.join(version);
+    let plateform = detect_plateform();
+
+    if plateform == "win" {
+        return Ok(version_path);
+    }
+
+    Ok(version_path.join("bin"))
+}
+
+pub fn exec_node_file_path(version: &str, name: &str) -> Result<PathBuf, FsError> {
+    let bin_path = bin_node_version_exec_dir(version)?;
+    Ok(bin_path.join(name))
+}
+
 pub fn create_exec_symlink(version_path: &Path) -> Result<(), FsError> {
-    let bin_dir = version_path.join("bin");
+    let bin_dir = if cfg!(unix) {
+        version_path.join("bin")
+    } else {
+        version_path.to_path_buf() // Windows
+    };
     let exec_names = find_executables(&bin_dir)?;
 
     let ulvm_bin_dir = ensure_ulvm_bin_dir()?;
-    let shim_exec = ulvm_bin_dir.join("ulvm_shim");
+    let shim_exec = shim_exec_full_path()?;
 
     if !shim_exec.exists() {
         return Err(FsError::ShimExecNotFound);
@@ -86,14 +107,9 @@ pub fn find_executables(dir: &Path) -> io::Result<Vec<OsString>> {
         let entry = entry?;
         let path = entry.path();
 
-        if path.is_file() {
-            let metadata = fs::metadata(&path)?;
-
-            let permissions = metadata.permissions();
-
-            // UNIX
-            if permissions.mode() & 0o111 != 0 {
-                executables_names.push(path.file_name().unwrap().to_owned());
+        if is_executable(&path)? {
+            if let Some(name) = path.file_name() {
+                executables_names.push(name.to_owned());
             }
         }
     }
@@ -101,8 +117,8 @@ pub fn find_executables(dir: &Path) -> io::Result<Vec<OsString>> {
     Ok(executables_names)
 }
 
-pub fn remove_symlink_for_version(version_path: &Path) -> Result<(), FsError> {
-    let exec_names = find_executables(&version_path.join("bin"))?;
+pub fn remove_symlink_for_version(version: &str) -> Result<(), FsError> {
+    let exec_names = find_executables(bin_node_version_exec_dir(version)?.as_path())?;
     let ulvm_bin_dir = ensure_ulvm_bin_dir()?;
 
     for name in exec_names {
@@ -149,6 +165,7 @@ where
     std::os::unix::fs::symlink(original, link)
 }
 
+// TODO: see for refactor all with hardLink
 #[cfg(windows)]
 pub fn create_symlink<P, Q>(original: P, link: Q) -> io::Result<()>
 where
@@ -156,9 +173,47 @@ where
     Q: AsRef<Path>,
 {
     let original_path = original.as_ref();
-    if original_path.is_dir() {
-        std::os::windows::fs::symlink_dir(original_path, link)
+    // if original_path.is_dir() {
+    //     std::os::windows::fs::symlink_dir(original_path, link)
+    // } else {
+    //     std::os::windows::fs::symlink_file(original_path, link)
+    // }
+
+    fs::hard_link(original_path, link)
+}
+
+fn shim_exec_full_path() -> Result<PathBuf, FsError> {
+    let bin_dir = ensure_ulvm_bin_dir()?;
+
+    let ext = if cfg!(target_family = "windows") {
+        ".exe"
     } else {
-        std::os::windows::fs::symlink_file(original_path, link)
+        ""
+    };
+
+    Ok(bin_dir.join(format!("ulvm_shim{}", ext)))
+}
+
+#[cfg(unix)]
+fn is_executable(path: &Path) -> io::Result<bool> {
+    std::os::unix::fs::PermissionsExt;
+    let metadata = fs::metadata(path)?;
+    let permissions = metadata.permissions();
+    Ok(metadata.is_file() && (permissions.mode() & 0o111 != 0));
+}
+
+#[cfg(windows)]
+fn is_executable(path: &Path) -> io::Result<bool> {
+    let metadata = fs::metadata(path)?;
+
+    if !metadata.is_file() {
+        return Ok(false);
+    }
+
+    if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+        let ext = ext.to_ascii_lowercase();
+        Ok(matches!(ext.as_str(), "exe" | "bat" | "cmd"))
+    } else {
+        Ok(false)
     }
 }

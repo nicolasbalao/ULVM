@@ -2,7 +2,7 @@ use std::fs::{self};
 
 use crate::{
     core::{
-        archive::{ArchiveError, extract_tar_gz},
+        archive::{ArchiveError, extract_archive},
         downloads::{DownloadError, download_file},
         fs::{FsError, ensure_node_downloads_dir, ensure_node_versions_dir},
     },
@@ -28,8 +28,10 @@ pub enum InstallError {
 
 pub fn execute(version: &str) -> Result<(), InstallError> {
     println!("Installation node.js {version} ...");
-    let destination_path = ensure_node_versions_dir()?.join(version);
-    if destination_path.exists() {
+    // let destination_path = ensure_node_versions_dir()?.join(version);
+    let destination_path = ensure_node_versions_dir()?;
+    let version_installation_folder = destination_path.join(version);
+    if version_installation_folder.exists() {
         println!(
             "Nodejs {} is already installed at: {}",
             version,
@@ -42,11 +44,13 @@ pub fn execute(version: &str) -> Result<(), InstallError> {
     let arch = detect_arch(); // x64, arm64
 
     let url = build_download_node_url(version, &plateform, &arch);
+    // TODO: refactor this to have one archive name builder
     let archive_path = ensure_node_downloads_dir()?.join(format!(
-        "node-{v}-{plateform}-{arch}.tar.gz",
+        "node-{v}-{plateform}-{arch}.{ext}",
         v = version,
         plateform = plateform,
-        arch = arch
+        arch = arch,
+        ext = if plateform == "win" { "7z" } else { "tar.gz" }
     ));
 
     if archive_path.exists() {
@@ -56,9 +60,20 @@ pub fn execute(version: &str) -> Result<(), InstallError> {
         download_file(&url, &archive_path)?;
     }
 
-    fs::create_dir(&destination_path)?;
+    // fs::create_dir(&destination_path)?;
 
-    extract_tar_gz(&archive_path, &destination_path)?;
+    extract_archive(&archive_path, &destination_path)?;
+
+    let extraction_folder = destination_path.join(format!(
+        "node-{v}-{plateform}-{arch}",
+        v = version,
+        plateform = plateform,
+        arch = arch
+    ));
+
+    println!("Extraction folder {}", extraction_folder.display());
+
+    fs::rename(extraction_folder, version_installation_folder)?;
 
     println!(
         "Nodejs {} is installed at: {}",
@@ -78,6 +93,6 @@ fn build_download_node_url(version: &str, plateform: &str, arch: &str) -> String
         v = version,
         plateform = plateform,
         arch = arch,
-        ext = if plateform == "win" { "zip" } else { "tar.gz" }
+        ext = if plateform == "win" { "7z" } else { "tar.gz" }
     )
 }
