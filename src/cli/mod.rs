@@ -35,15 +35,24 @@ pub fn run() {
             }
             NodeCommands::List { remote, all } => {
                 if remote && !all {
-                    let _ = lang::node::command::list::remote_execute();
+                    if let Err(e) = lang::node::command::list::remote_execute() {
+                        eprintln!("{:?}", e);
+                        std::process::exit(1);
+                    }
                 } else if remote && all {
-                    let _ = lang::node::command::list::all_remote_execute();
+                    if let Err(e) = lang::node::command::list::all_remote_execute() {
+                        eprintln!("{:?}", e);
+                        std::process::exit(1);
+                    }
                 } else {
                     println!("Listing local node.js versions...")
                 }
             }
-            NodeCommands::Uninstall { version } => {
-                println!("Uninstall node.js version {version}")
+            NodeCommands::Uninstall { version, hard } => {
+                if let Err(e) = lang::node::command::uninstall::execute(&version, hard) {
+                    eprintln!("{}", e);
+                    std::process::exit(1);
+                }
             }
         },
     }

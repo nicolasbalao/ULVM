@@ -27,5 +27,7 @@ pub enum NodeCommands {
     Uninstall {
         #[arg()]
         version: String,
+        #[arg(long)]
+        hard: bool,
     },
 }

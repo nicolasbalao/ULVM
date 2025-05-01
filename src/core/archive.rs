@@ -8,6 +8,8 @@ use flate2::read::GzDecoder;
 use tar::Archive;
 use thiserror::Error;
 
+use crate::platform;
+
 #[derive(Debug, Error)]
 pub enum ArchiveError {
     #[error("I/O error: {0}")]
@@ -40,4 +42,16 @@ pub fn extract_tar_gz(source_path: &PathBuf, destination_path: &Path) -> Result<
     }
 
     Ok(())
+}
+
+pub fn build_archive_name(version: &str) -> String {
+    let plateform = platform::detect_plateform();
+    let arch = platform::detect_arch();
+
+    format!(
+        "node-{v}-{p}-{a}.tar.gz",
+        v = &version,
+        p = plateform,
+        a = arch
+    )
 }

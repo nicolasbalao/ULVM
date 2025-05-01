@@ -8,6 +8,8 @@ use std::{
 
 use thiserror::Error;
 
+use super::archive::build_archive_name;
+
 #[derive(Debug, Error)]
 pub enum FsError {
     #[error("Erreur IO: {0}")]
@@ -96,6 +98,34 @@ pub fn find_executables(dir: &Path) -> io::Result<Vec<OsString>> {
     }
 
     Ok(executables_names)
+}
+
+pub fn remove_symlink_for_version(version_path: &Path) -> Result<(), FsError> {
+    let exec_names = find_executables(&version_path.join("bin"))?;
+    let ulvm_bin_dir = ensure_ulvm_bin_dir()?;
+
+    for name in exec_names {
+        let bin_path = ulvm_bin_dir.join(&name);
+        if bin_path.exists() {
+            println!("Removing symlink: {}", bin_path.display());
+            fs::remove_file(&bin_path)?;
+        }
+    }
+    Ok(())
+}
+
+pub fn remove_version_dir(version_path: &Path) -> Result<(), FsError> {
+    println!("Removing version dir: {}", version_path.display());
+    Ok(fs::remove_dir_all(version_path)?)
+}
+
+pub fn remove_archive(version: &str) -> Result<(), FsError> {
+    let archive_path = ensure_node_downloads_dir()?.join(build_archive_name(version));
+    if archive_path.exists() {
+        println!("Removing archive: {}", archive_path.display());
+        fs::remove_file(archive_path)?;
+    }
+    Ok(())
 }
 
 // ------------- PRIVATE ---------------
