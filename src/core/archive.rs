@@ -21,30 +21,16 @@ pub enum ArchiveError {
 }
 
 #[cfg(unix)]
-pub fn extract_archive(source_path: &PathBuf, destination_path: &Path) -> Result<(), ArchiveError> {
+pub fn extract_archive(source_path: &Path, destination_path: &Path) -> Result<(), ArchiveError> {
     use flate2::read::GzDecoder;
     use std::fs::File;
-    use std::path::PathBuf;
     use tar::Archive;
 
     let archive_file = File::open(source_path)?;
     let decoder = GzDecoder::new(archive_file);
     let mut archive = Archive::new(decoder);
 
-    for entry in archive.entries()? {
-        let mut entry = entry?;
-        let path = entry.path().map_err(|_| ArchiveError::InvalidEntryPath)?;
-
-        let mut component = path.components();
-        component.next();
-
-        let new_path = destination_path.join(component.as_path());
-
-        if new_path.as_os_str().is_empty() {
-            continue;
-        }
-        entry.unpack(&new_path)?;
-    }
+    archive.unpack(destination_path)?;
 
     Ok(())
 }

@@ -196,10 +196,10 @@ fn shim_exec_full_path() -> Result<PathBuf, FsError> {
 
 #[cfg(unix)]
 fn is_executable(path: &Path) -> io::Result<bool> {
-    std::os::unix::fs::PermissionsExt;
+    use std::os::unix::fs::PermissionsExt;
     let metadata = fs::metadata(path)?;
     let permissions = metadata.permissions();
-    Ok(metadata.is_file() && (permissions.mode() & 0o111 != 0));
+    Ok(metadata.is_file() && (permissions.mode() & 0o111 != 0))
 }
 
 #[cfg(windows)]
