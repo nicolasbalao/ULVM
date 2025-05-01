@@ -2,7 +2,10 @@ use thiserror::Error;
 
 use crate::core::{
     config::{errors::UlvmConfigError, ulvm_config::UlvmConfig},
-    fs::{FsError, ensure_node_versions_dir, remove_archive, remove_symlink_for_version},
+    fs::{
+        FsError, ensure_node_versions_dir, remove_archive, remove_symlink_for_version,
+        remove_version_dir,
+    },
 };
 
 #[derive(Error, Debug)]
@@ -46,6 +49,8 @@ pub fn execute(version: &str, hard: bool) -> Result<(), UninstallError> {
     if hard {
         remove_archive(version)?;
     }
+
+    remove_version_dir(&version_path)?;
 
     println!("Nodejs {} is uninstalled", &version);
     Ok(())
