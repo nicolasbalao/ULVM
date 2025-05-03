@@ -5,30 +5,12 @@ PACKAGE_DIR=dist
 BIN_BASE_CLI_NAME=ulvm
 BIN_BASE_SHIM_NAME=ulvm_shim
 CARGO_BUILD_DIST=target/release
+CARGO_BUILD_DIST_WINDOWS=target/x86_64-pc-windows-gnu/release
 
 # TODO: refactor os detection uname doesn't exist on windows
-TARGET ?= $(shell uname -s | tr A-Z a-z)
-
-ifeq ($(TARGET),msys)
-	PLATFORM=windows
-else ifeq ($(TARGET),windowsnt)
-	PLATFORM=windows
-else ifeq ($(TARGET),linux)
-	PLATFORM=linux
-else
-	PLATFORM=unknown
-endif
-
-ifeq ($(PLATFORM),windows)
-	BIN_CLI_NAME=$(BIN_BASE_CLI_NAME).exe
-	BIN_SHIM_NAME=$(BIN_BASE_SHIM_NAME).exe
-else
-	BIN_CLI_NAME=$(BIN_BASE_CLI_NAME)
-	BIN_SHIM_NAME=$(BIN_BASE_SHIM_NAME)
-endif
 
 # Commandes par défaut
-.PHONY: help all linux windows clean build
+.PHONY: help all clean build
 
 help:
 	@echo "Usage:"
@@ -37,37 +19,30 @@ help:
 
 all: linux windows
 
-build:
-	@echo "⛏️  Build pour $(PLATFORM)"
-	make build-$(PLATFORM)
 
+# build-linux:
+# 	@echo "⛏️  Building"
+# 	cargo build --release
 
-package:
-	@echo "📦 Package pour $(PLATFORM)"
-	make package-$(PLATFORM)
-
-
-build-linux:
-	cargo build --release
-
-	mkdir -p $(BUILD_DIR)/linux
-	cp $(CARGO_BUILD_DIST)/$(BIN_CLI_NAME) $(BUILD_DIR)/linux/
-	cp $(CARGO_BUILD_DIST)/$(BIN_SHIM_NAME) $(BUILD_DIR)/linux/
-	cp scripts/install.sh $(BUILD_DIR)/linux/
+# 	mkdir -p $(BUILD_DIR)/linux
+# 	cp $(CARGO_BUILD_DIST)/$(BIN_CLI_NAME) $(BUILD_DIR)/linux/
+# 	cp $(CARGO_BUILD_DIST)/$(BIN_SHIM_NAME) $(BUILD_DIR)/linux/
+# 	cp scripts/install.sh $(BUILD_DIR)/linux/
 
 build-windows:
-	cargo build --release
+	cross build --target x86_64-pc-windows-gnu --release
 
-	mkdir -p $(BUILD_DIR)/
-	cp $(CARGO_BUILD_DIST)/$(BIN_CLI_NAME) $(BUILD_DIR)/
-	cp $(CARGO_BUILD_DIST)/$(BIN_SHIM_NAME) $(BUILD_DIR)/
-	cp scripts/install.bat $(BUILD_DIR)/
+	mkdir -p $(BUILD_DIR)/x86_64-pc-windows-gnu
+	cp $(CARGO_BUILD_DIST_WINDOWS)/$(BIN_BASE_CLI_NAME).exe $(BUILD_DIR)/x86_64-pc-windows-gnu/
+	cp $(CARGO_BUILD_DIST_WINDOWS)/$(BIN_BASE_SHIM_NAME).exe $(BUILD_DIR)/x86_64-pc-windows-gnu/
+	cp scripts/install.bat $(BUILD_DIR)/x86_64-pc-windows-gnu/
 
-package-linux:
-	make build
+# package-linux:
+# 	make build
 
-	mkdir -p $(PACKAGE_DIR)
-	tar czvf $(PACKAGE_DIR)/ulvm.tar.gz -C $(BUILD_DIR) .
+# 	mkdir -p $(PACKAGE_DIR)
+# 	tar czvf $(PACKAGE_DIR)/ulvm.tar.gz -C $(BUILD_DIR) .
+# 	zip -r x86_64-pc-windows-gnu.zip $(BUILD_DIR)
 
 
 clean:
