@@ -55,12 +55,20 @@ build-linux:
 	cp $(CARGO_BUILD_DIST)/$(BIN_SHIM_NAME) $(BUILD_DIR)/linux/
 	cp scripts/install.sh $(BUILD_DIR)/linux/
 
+build-windows:
+	cargo build --release
+
+	mkdir -p $(BUILD_DIR)/
+	cp $(CARGO_BUILD_DIST)/$(BIN_CLI_NAME) $(BUILD_DIR)/
+	cp $(CARGO_BUILD_DIST)/$(BIN_SHIM_NAME) $(BUILD_DIR)/
+	cp scripts/install.bat $(BUILD_DIR)/
 
 package-linux:
 	make build
 
 	mkdir -p $(PACKAGE_DIR)
 	tar czvf $(PACKAGE_DIR)/ulvm.tar.gz -C $(BUILD_DIR) .
+
 
 clean:
 	rm -rf $(BUILD_DIR) $(PACKAGE_DIR)
