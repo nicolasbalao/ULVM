@@ -21,6 +21,7 @@ help:
 
 
 build:
+	make clean
 	@echo "⛏️  Building"
 
 	cargo build --release
@@ -29,17 +30,19 @@ build:
 	cp $(CARGO_BUILD_DIST)/$(BIN_BASE_CLI_NAME) $(BUILD_DIR)/
 	cp $(CARGO_BUILD_DIST)/$(BIN_BASE_SHIM_NAME) $(BUILD_DIR)/
 	cp scripts/install.sh $(BUILD_DIR)/
+	cp scripts/uninstall.sh $(BUILD_DIR)/
 
 
 
 build-windows:
+	make clean
 	cross build --target x86_64-pc-windows-gnu --release
 
-	mkdir -p $(BUILD_DIR)/x86_64-pc-windows-gnu
 	cp $(CARGO_BUILD_DIST_WINDOWS)/$(BIN_BASE_CLI_NAME).exe $(BUILD_DIR)/
 	cp $(CARGO_BUILD_DIST_WINDOWS)/$(BIN_BASE_SHIM_NAME).exe $(BUILD_DIR)/
 
 	cp scripts/install.bat $(BUILD_DIR)/
+	cp scripts/uninstall.bat $(BUILD_DIR)/
 
 package:
 	make build
