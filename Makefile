@@ -38,6 +38,7 @@ build-windows:
 	make clean
 	cross build --target x86_64-pc-windows-gnu --release
 
+	mkdir -p $(BUILD_DIR)
 	cp $(CARGO_BUILD_DIST_WINDOWS)/$(BIN_BASE_CLI_NAME).exe $(BUILD_DIR)/
 	cp $(CARGO_BUILD_DIST_WINDOWS)/$(BIN_BASE_SHIM_NAME).exe $(BUILD_DIR)/
 

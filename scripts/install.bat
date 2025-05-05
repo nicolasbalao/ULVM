@@ -35,6 +35,19 @@ copy /Y ulvm.exe "%ULVM_BIN_DIR%" >nul
 echo 📦 Copying ulvm_shim.exe...
 copy /Y ulvm_shim.exe "%ULVM_BIN_DIR%" >nul
 
+:: === Run `ulvm setup` if the bin directory is in PATH ===
+echo.
+echo 🔍 Checking if "%ULVM_BIN_DIR%" is in PATH...
+echo %PATH% | find /I "%ULVM_BIN_DIR%" >nul
+if %ERRORLEVEL%==0 (
+    echo 🧪 Running "ulvm setup"...
+    ulvm setup
+) else (
+    echo ⚠ "%ULVM_BIN_DIR%" is NOT in your PATH.
+    echo 👉 Please add it before using the ulvm CLI globally.
+)
+
+
 :: === Done ===
 echo.
 echo ✅ Installation completed successfully!

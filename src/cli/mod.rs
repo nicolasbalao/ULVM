@@ -1,3 +1,4 @@
+pub mod command;
 pub mod node;
 use clap::{Parser, Subcommand, command};
 use node::{NodeArgs, NodeCommands};
@@ -14,6 +15,7 @@ pub struct Cli {
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     Node(NodeArgs),
+    Setup,
 }
 
 pub fn run() {
@@ -55,5 +57,11 @@ pub fn run() {
                 }
             }
         },
+        Commands::Setup => {
+            if let Err(e) = command::setup::execute() {
+                eprintln!("{}", e);
+                std::process::exit(1);
+            }
+        }
     }
 }

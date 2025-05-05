@@ -31,7 +31,13 @@ cp "$SCRIPT_DIR/ulvm" "$CLI_BIN_DIR/ulvm"
 echo  "🔧 Installing shim to ${BOLD}$ULVM_BIN_DIR${RESET}"
 cp "$SCRIPT_DIR/ulvm_shim" "$ULVM_BIN_DIR/ulvm_shim"
 
-# Fin
-echo
-echo  "${GREEN}✅ Installation complete!${RESET}"
-echo  "👉 Make sure ${BOLD}~/.local/bin${RESET} is in your PATH."
+# Vérifie si ~/.local/bin est dans le PATH
+if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+  echo
+  echo "${BOLD}⚠ ~/.local/bin is not in your PATH — cannot run 'ulvm' directly.${RESET}"
+  echo "👉 You can run it manually later or add ~/.local/bin to your PATH."
+else
+  echo
+  echo "🧪 Running '${BOLD}ulvm setup${RESET}' to verify installation..."
+  ulvm setup
+fi
