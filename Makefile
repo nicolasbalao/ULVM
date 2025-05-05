@@ -16,6 +16,8 @@ help:
 	@echo "Usage:"
 	@echo "make build          Build project create /build with exec and install file"
 	@echo "make package        Build and packge the project creating archive file"
+	@echo "make install        Build and install the project"
+	@echo "make uninstall      Uninstall the project"
 
 
 build:
@@ -53,6 +55,9 @@ package-windows:
 install:
 	make build
 	sh $(BUILD_DIR)/install.sh
+
+uninstall:
+	sh scripts/uninstall.sh
 
 clean:
 	rm -rf $(BUILD_DIR) $(PACKAGE_DIR)
