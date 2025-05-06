@@ -7,6 +7,7 @@ use crate::{
         fs::{FsError, ensure_node_downloads_dir, ensure_node_versions_dir},
     },
     platform::{detect_arch, detect_plateform},
+    ui,
 };
 
 use thiserror::Error;
@@ -27,16 +28,19 @@ pub enum InstallError {
 }
 
 pub fn execute(version: &str) -> Result<(), InstallError> {
-    println!("Installation node.js {version} ...");
-    // let destination_path = ensure_node_versions_dir()?.join(version);
+    ui::info(format!("Installation node.js {} ...", version).as_str());
     let destination_path = ensure_node_versions_dir()?;
     let version_installation_folder = destination_path.join(version);
     if version_installation_folder.exists() {
-        println!(
-            "Nodejs {} is already installed at: {}",
-            version,
-            destination_path.display()
+        ui::info(
+            format!(
+                "Nodejs {} is already installed at: {}",
+                version,
+                destination_path.display()
+            )
+            .as_str(),
         );
+
         return Ok(());
     }
 
@@ -54,13 +58,11 @@ pub fn execute(version: &str) -> Result<(), InstallError> {
     ));
 
     if archive_path.exists() {
-        println!("Archive already exist skip downloading")
+        ui::info("Archive already exist skip downloading");
     } else {
-        println!("Dowloading Node.js from {url}");
+        ui::info(format!("Downloading Node.js from {}", url).as_str());
         download_file(&url, &archive_path)?;
     }
-
-    // fs::create_dir(&destination_path)?;
 
     extract_archive(&archive_path, &destination_path)?;
 
@@ -71,14 +73,17 @@ pub fn execute(version: &str) -> Result<(), InstallError> {
         arch = arch
     ));
 
-    println!("Extraction folder {}", extraction_folder.display());
+    ui::info(format!("Extraction folder {}", extraction_folder.display()).as_str());
 
     fs::rename(extraction_folder, version_installation_folder)?;
 
-    println!(
-        "Nodejs {} is installed at: {}",
-        version,
-        destination_path.display()
+    ui::success(
+        format!(
+            "Nodejs {} is installed at: {}",
+            version,
+            destination_path.display()
+        )
+        .as_str(),
     );
 
     Ok(())

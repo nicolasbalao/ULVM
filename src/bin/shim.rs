@@ -1,6 +1,9 @@
 use std::{env, process::Command};
 
-use ulvm::core::{config::ulvm_config::UlvmConfig, fs::exec_node_file_path};
+use ulvm::{
+    core::{config::ulvm_config::UlvmConfig, fs::exec_node_file_path},
+    ui,
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let shim_name = env::args()
@@ -13,7 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap_or_else(|| "unknown".into());
 
     let ulvm_config = UlvmConfig::load().unwrap_or_else(|e| {
-        eprintln!("Error occured: {}", e);
+        ui::error(format!("Error occured: {}", e).as_str());
         std::process::exit(1);
     });
 

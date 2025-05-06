@@ -7,7 +7,7 @@ use std::{
 
 use thiserror::Error;
 
-use crate::platform::detect_plateform;
+use crate::{platform::detect_plateform, ui};
 
 use super::archive::build_archive_name;
 
@@ -46,7 +46,7 @@ pub fn ensure_node_downloads_dir() -> Result<PathBuf, FsError> {
 
 pub fn ensure_dir(dir: PathBuf) -> Result<PathBuf, FsError> {
     if !dir.exists() {
-        println!("🔧 Create folder : {}", dir.display());
+        ui::info(format!("🔧 Create folder : {}", dir.display()).as_str());
         fs::create_dir_all(&dir)?;
     }
     Ok(dir)
@@ -124,7 +124,7 @@ pub fn remove_symlink_for_version(version: &str) -> Result<(), FsError> {
     for name in exec_names {
         let bin_path = ulvm_bin_dir.join(&name);
         if bin_path.exists() {
-            println!("Removing symlink: {}", bin_path.display());
+            ui::info(format!("Removing symlink: {}", bin_path.display()).as_str());
             fs::remove_file(&bin_path)?;
         }
     }
@@ -132,14 +132,14 @@ pub fn remove_symlink_for_version(version: &str) -> Result<(), FsError> {
 }
 
 pub fn remove_version_dir(version_path: &Path) -> Result<(), FsError> {
-    println!("Removing version dir: {}", version_path.display());
+    ui::info(format!("Removing version dir: {}", version_path.display()).as_str());
     Ok(fs::remove_dir_all(version_path)?)
 }
 
 pub fn remove_archive(version: &str) -> Result<(), FsError> {
     let archive_path = ensure_node_downloads_dir()?.join(build_archive_name(version));
     if archive_path.exists() {
-        println!("Removing archive: {}", archive_path.display());
+        ui::info(format!("Removing archive: {}", archive_path.display()).as_str());
         fs::remove_file(archive_path)?;
     }
     Ok(())
@@ -173,12 +173,6 @@ where
     Q: AsRef<Path>,
 {
     let original_path = original.as_ref();
-    // if original_path.is_dir() {
-    //     std::os::windows::fs::symlink_dir(original_path, link)
-    // } else {
-    //     std::os::windows::fs::symlink_file(original_path, link)
-    // }
-
     fs::hard_link(original_path, link)
 }
 

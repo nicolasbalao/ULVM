@@ -1,11 +1,14 @@
 use thiserror::Error;
 
-use crate::core::{
-    config::{errors::UlvmConfigError, ulvm_config::UlvmConfig},
-    fs::{
-        FsError, ensure_node_versions_dir, remove_archive, remove_symlink_for_version,
-        remove_version_dir,
+use crate::{
+    core::{
+        config::{errors::UlvmConfigError, ulvm_config::UlvmConfig},
+        fs::{
+            FsError, ensure_node_versions_dir, remove_archive, remove_symlink_for_version,
+            remove_version_dir,
+        },
     },
+    ui,
 };
 
 #[derive(Error, Debug)]
@@ -25,7 +28,7 @@ pub fn execute(version: &str, hard: bool) -> Result<(), UninstallError> {
     let version_path = ensure_node_versions_dir()?.join(version);
 
     if !version_path.exists() {
-        println!("Nodejs {} is not installed", version);
+        ui::info(format!("Nodejs {} is not installed", version).as_str());
         return Ok(());
     }
 
@@ -39,7 +42,7 @@ pub fn execute(version: &str, hard: bool) -> Result<(), UninstallError> {
         .unwrap_or(false);
 
     if is_current {
-        println!("Nodejs {} is your current version", &version);
+        ui::info(format!("Nodejs {} is your current version", &version).as_str());
         base_config.node = None;
         base_config.save()?;
         remove_symlink_for_version(version)?;
@@ -52,6 +55,7 @@ pub fn execute(version: &str, hard: bool) -> Result<(), UninstallError> {
 
     remove_version_dir(&version_path)?;
 
-    println!("Nodejs {} is uninstalled", &version);
+    ui::info(format!("Nodejs {} is uninstalled", &version).as_str());
+
     Ok(())
 }

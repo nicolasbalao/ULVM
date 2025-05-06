@@ -1,3 +1,4 @@
+use crate::ui;
 use std::env;
 use std::path::{Path, PathBuf};
 
@@ -18,18 +19,24 @@ fn get_ulvm_bin_dir() -> PathBuf {
 
 fn check_directory_exists(path: &Path) {
     let status = if path.exists() { "✔" } else { "✘" };
-    println!("{:<2} .ulvm\\bin directory: {}", status, path.display());
+    let msg = format!(".ulvm\\bin directory: {}", path.display());
+    if path.exists() {
+        ui::success(msg.as_str());
+    } else {
+        ui::error(msg.as_str());
+    }
 }
 
 fn check_binaries_exist(bin_dir: &Path) {
     let ulvm = bin_dir.join("ulvm.exe");
     let shim = bin_dir.join("ulvm_shim.exe");
-    let status = if ulvm.exists() && shim.exists() {
-        "✅️"
+
+    let msg = "Binaries in place: ulvm.exe & ulvm_shim.exe";
+    if path.exists() {
+        ui::success(msg.as_str());
     } else {
-        "❌"
-    };
-    println!("{:<2} Binaries in place: ulvm.exe & ulvm_shim.exe", status);
+        ui::error(msg.as_str());
+    }
 }
 
 fn check_path_contains(bin_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
@@ -37,9 +44,9 @@ fn check_path_contains(bin_dir: &Path) -> Result<(), Box<dyn std::error::Error>>
     let path_var = env::var_os("PATH").ok_or("Missing PATH variable")?;
     let mut paths = env::split_paths(&path_var);
     if paths.any(|p| p == *bin_dir) {
-        println!("✅️ .ulvm\\bin is already in PATH.");
+        ui::success!(".ulvm\\bin is already in PATH.");
     } else {
-        println!("❌ .ulvm\\bin is NOT in PATH.");
+        ui::error(".ulvm\\bin is NOT in PATH.");
         println!("👉 To use ulvm from anywhere, add this to your PATH:");
         println!(
             "   PowerShell: $env:PATH = \"{};\" + $env:PATH",

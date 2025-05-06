@@ -3,7 +3,7 @@ pub mod node;
 use clap::{Parser, Subcommand, command};
 use node::{NodeArgs, NodeCommands};
 
-use crate::lang;
+use crate::{lang, ui};
 
 #[derive(Parser, Debug)]
 #[command(name = "ULVM", version, about = "Version manager")]
@@ -25,41 +25,41 @@ pub fn run() {
         Commands::Node(node_args) => match node_args.command {
             NodeCommands::Install { version } => {
                 if let Err(e) = lang::node::command::install::execute(&version) {
-                    eprintln!("{}", e);
+                    ui::error(format!("{}", e).as_str());
                     std::process::exit(1);
                 }
             }
             NodeCommands::Use { version } => {
                 if let Err(e) = lang::node::command::r#use::execute(&version) {
-                    eprintln!("{}", e);
+                    ui::error(format!("{}", e).as_str());
                     std::process::exit(1);
                 }
             }
             NodeCommands::List { remote, all } => {
                 if remote && !all {
                     if let Err(e) = lang::node::command::list::remote_execute() {
-                        eprintln!("{:?}", e);
+                        ui::error(format!("{}", e).as_str());
                         std::process::exit(1);
                     }
                 } else if remote && all {
                     if let Err(e) = lang::node::command::list::all_remote_execute() {
-                        eprintln!("{:?}", e);
+                        ui::error(format!("{}", e).as_str());
                         std::process::exit(1);
                     }
                 } else {
-                    println!("Listing local node.js versions...")
+                    ui::info("Listing local node.js versions...");
                 }
             }
             NodeCommands::Uninstall { version, hard } => {
                 if let Err(e) = lang::node::command::uninstall::execute(&version, hard) {
-                    eprintln!("{}", e);
+                    ui::error(format!("{}", e).as_str());
                     std::process::exit(1);
                 }
             }
         },
         Commands::Setup => {
             if let Err(e) = command::setup::execute() {
-                eprintln!("{}", e);
+                ui::error(format!("{}", e).as_str());
                 std::process::exit(1);
             }
         }
