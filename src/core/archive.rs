@@ -37,7 +37,7 @@ pub fn extract_archive(source_path: &Path, destination_path: &Path) -> Result<()
 
 #[cfg(windows)]
 pub fn extract_archive(archive: &Path, destination: &Path) -> Result<(), ArchiveError> {
-    use crate::{info, ui};
+    use crate::verbose;
     use sevenz_rust::decompress_file;
 
     verbose!(
