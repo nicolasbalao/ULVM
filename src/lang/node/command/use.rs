@@ -13,7 +13,7 @@ use crate::{
             ensure_ulvm_bin_dir,
         },
     },
-    platform, ui,
+    info, platform, success, verbose, warn,
 };
 
 use super::install::{self, InstallError};
@@ -35,12 +35,9 @@ pub fn execute(version: &str) -> Result<(), UseError> {
     let version_installation_path = ulvm_fs::ensure_node_versions_dir()?.join(version);
 
     if !version_installation_path.exists() {
-        ui::info(
-            format!(
-                "Node.js version {} not found locally. Installing...",
-                version
-            )
-            .as_str(),
+        verbose!(
+            "Node.js version {} not found locally. Installing...",
+            version
         );
         install::execute(version)?;
         // Une fois installée, relancer `execute` pour configurer l'usage
@@ -53,7 +50,7 @@ pub fn execute(version: &str) -> Result<(), UseError> {
     // Vérifie si la version demandée est déjà utilisée
     if let Some(ref node_config) = config.node {
         if node_config.version == version {
-            ui::info(format!("Node.js version {} is already set as current.", version).as_str());
+            info!("Node.js version {} is already set as current.", version);
             return Ok(());
         }
     }
@@ -66,26 +63,23 @@ pub fn execute(version: &str) -> Result<(), UseError> {
     config.save()?;
 
     let version_path = ensure_node_versions_dir()?.join(version);
-    ui::info("Creating symlink");
+    verbose!("Creating symlink");
     create_exec_symlink(&version_path)?;
 
-    ui::success(format!("Now using Node.js version: {}", version).as_str());
+    success!("Now using Node.js version: {}", version);
 
     let path_env_var = env::var("PATH").unwrap();
 
     let ulvm_bin_dir = ensure_ulvm_bin_dir()?;
     if !path_env_var.contains(ulvm_bin_dir.to_str().unwrap()) {
-        ui::info(
-            format!(
-                "Dont forget to add {} to your $PATH",
-                ulvm_bin_dir.display()
-            )
-            .as_str(),
+        warn!(
+            "Dont forget to add {} to your $PATH",
+            ulvm_bin_dir.display()
         );
         if platform::detect_plateform() == "win" {
-            ui::info(format!("$env:PATH = \"{};$env:PATH\"", ulvm_bin_dir.display()).as_str());
+            info!("$env:PATH = \"{};$env:PATH\"", ulvm_bin_dir.display());
         } else {
-            ui::info(format!("export PATH=\"{}:$PATH\"", ulvm_bin_dir.display()).as_str());
+            info!("export PATH=\"{}:$PATH\"", ulvm_bin_dir.display())
         }
     }
     Ok(())

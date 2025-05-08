@@ -1,9 +1,9 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-use colored::Colorize;
+use crate::{error, info, success};
 
-use crate::ui;
+use colored::Colorize;
 
 pub fn run() -> Result<(), Box<dyn std::error::Error>> {
     println!("🔧 ULVM Setup - Environment Check (Unix)\n");
@@ -21,11 +21,10 @@ fn get_ulvm_bin_dir() -> PathBuf {
 }
 
 fn check_directory_exists(path: &Path) {
-    let msg = format!(".ulvm/bin directory: {}", path.display());
     if path.exists() {
-        ui::success(msg.as_str());
+        success!(".ulvm/bin directory: {}", path.display())
     } else {
-        ui::error(msg.as_str());
+        error!(".ulvm/bin directory: {}", path.display())
     }
 }
 
@@ -36,11 +35,10 @@ fn check_binaries_exist(bin_dir: &Path) {
         .join("bin");
     let shim = bin_dir.join("ulvm_shim");
 
-    let msg = format!("Binaries in place: {} & {}", ulvm.display(), shim.display());
     if ulvm.exists() && shim.exists() {
-        ui::success(msg.as_str());
+        success!("Binaries in place: {} & {}", ulvm.display(), shim.display())
     } else {
-        ui::error(msg.as_str());
+        error!("Binaries in place: {} & {}", ulvm.display(), shim.display())
     }
 }
 
@@ -49,11 +47,11 @@ fn check_path_contains(bin_dir: &Path) -> Result<(), Box<dyn std::error::Error>>
     let path_var = env::var_os("PATH").ok_or("Missing PATH variable")?;
     let mut paths = env::split_paths(&path_var);
     if paths.any(|p| p == *bin_dir) {
-        ui::success(format!("{} is already in PATH.", bin_dir.display()).as_str());
+        success!("{} is already in PATH.", bin_dir.display())
     } else {
-        ui::error(".ulvm/bin is NOT in PATH");
-        ui::info(" Add the following to your shell profile (e.g., ~/.bashrc, ~/.zshrc):");
-        ui::info("  export PATH=\"$HOME/.ulvm/bin:$PATH\"");
+        error!(".ulvm/bin is NOT in PATH");
+        info!(" Add the following to your shell profile (e.g., ~/.bashrc, ~/.zshrc):");
+        info!("  export PATH=\"$HOME/.ulvm/bin:$PATH\"");
     }
     Ok(())
 }

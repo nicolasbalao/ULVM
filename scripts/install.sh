@@ -18,17 +18,21 @@ echo
 
 # Création des répertoires
 echo  "📁 Creating ${BOLD}$CLI_BIN_DIR${RESET}"
+echo
 mkdir -p "$CLI_BIN_DIR"
 
 echo  "📁 Creating ${BOLD}$ULVM_BIN_DIR${RESET}"
+echo
 mkdir -p "$ULVM_BIN_DIR"
 
 # Copie du binaire CLI
 echo  "🚚 Installing CLI binary to ${BOLD}$CLI_BIN_DIR${RESET}"
+echo
 cp "$SCRIPT_DIR/ulvm" "$CLI_BIN_DIR/ulvm"
 
 # Copie du shim
 echo  "🔧 Installing shim to ${BOLD}$ULVM_BIN_DIR${RESET}"
+echo
 cp "$SCRIPT_DIR/ulvm_shim" "$ULVM_BIN_DIR/ulvm_shim"
 
 # Vérifie si ~/.local/bin est dans le PATH

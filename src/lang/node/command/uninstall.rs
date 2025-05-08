@@ -8,7 +8,7 @@ use crate::{
             remove_version_dir,
         },
     },
-    ui,
+    info, success, verbose,
 };
 
 #[derive(Error, Debug)]
@@ -28,7 +28,7 @@ pub fn execute(version: &str, hard: bool) -> Result<(), UninstallError> {
     let version_path = ensure_node_versions_dir()?.join(version);
 
     if !version_path.exists() {
-        ui::info(format!("Nodejs {} is not installed", version).as_str());
+        info!("Node.js {} is not installed", version);
         return Ok(());
     }
 
@@ -42,7 +42,7 @@ pub fn execute(version: &str, hard: bool) -> Result<(), UninstallError> {
         .unwrap_or(false);
 
     if is_current {
-        ui::info(format!("Nodejs {} is your current version", &version).as_str());
+        verbose!("Node.js {} is your current version", &version);
         base_config.node = None;
         base_config.save()?;
         remove_symlink_for_version(version)?;
@@ -55,7 +55,7 @@ pub fn execute(version: &str, hard: bool) -> Result<(), UninstallError> {
 
     remove_version_dir(&version_path)?;
 
-    ui::info(format!("Nodejs {} is uninstalled", &version).as_str());
+    success!("Node.js {} is uninstalled", &version);
 
     Ok(())
 }

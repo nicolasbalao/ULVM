@@ -8,15 +8,15 @@ RESET="\033[0m"
 
 # Variables
 CLI_BIN_DIR="$HOME/.local/bin"
-ULVM_BIN_DIR="$HOME/.ulvm/bin"
+ULVM_DIR="$HOME/.ulvm"
 
 
 # Création des répertoires
 echo  "📁 Removing ${BOLD}$CLI_BIN_DIR/ulvm${RESET}"
 rm    "$CLI_BIN_DIR/ulvm"
 
-echo  "📁 Removing ${BOLD}$ULVM_BIN_DIR${RESET}"
-rm -rf "$ULVM_BIN_DIR"
+echo  "📁 Removing ${BOLD}$ULVM_DIR${RESET}"
+rm -rf "$ULVM_DIR"
 # Fin
 echo
 echo  "${GREEN}✅ Uninstallation complete!${RESET}"

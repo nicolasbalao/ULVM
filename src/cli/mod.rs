@@ -3,11 +3,15 @@ pub mod node;
 use clap::{Parser, Subcommand, command};
 use node::{NodeArgs, NodeCommands};
 
-use crate::{lang, ui};
+use crate::{error, info, lang, ui::set_verbose};
 
 #[derive(Parser, Debug)]
 #[command(name = "ULVM", version, about = "Version manager")]
 pub struct Cli {
+    /// Enable verbose output to display additional details during execution
+    #[arg(short, long, global = true)]
+    verbose: bool,
+
     #[command(subcommand)]
     pub command: Commands,
 }
@@ -21,45 +25,47 @@ pub enum Commands {
 pub fn run() {
     let cli_arg = Cli::parse();
 
+    set_verbose(cli_arg.verbose);
+
     match cli_arg.command {
         Commands::Node(node_args) => match node_args.command {
             NodeCommands::Install { version } => {
                 if let Err(e) = lang::node::command::install::execute(&version) {
-                    ui::error(format!("{}", e).as_str());
+                    error!("{}", e);
                     std::process::exit(1);
                 }
             }
             NodeCommands::Use { version } => {
                 if let Err(e) = lang::node::command::r#use::execute(&version) {
-                    ui::error(format!("{}", e).as_str());
+                    error!("{}", e);
                     std::process::exit(1);
                 }
             }
             NodeCommands::List { remote, all } => {
                 if remote && !all {
                     if let Err(e) = lang::node::command::list::remote_execute() {
-                        ui::error(format!("{}", e).as_str());
+                        error!("{}", e);
                         std::process::exit(1);
                     }
                 } else if remote && all {
                     if let Err(e) = lang::node::command::list::all_remote_execute() {
-                        ui::error(format!("{}", e).as_str());
+                        error!("{}", e);
                         std::process::exit(1);
                     }
                 } else {
-                    ui::info("Listing local node.js versions...");
+                    info!("Listing local Node.js versions...");
                 }
             }
             NodeCommands::Uninstall { version, hard } => {
                 if let Err(e) = lang::node::command::uninstall::execute(&version, hard) {
-                    ui::error(format!("{}", e).as_str());
+                    error!("{}", e);
                     std::process::exit(1);
                 }
             }
         },
         Commands::Setup => {
             if let Err(e) = command::setup::execute() {
-                ui::error(format!("{}", e).as_str());
+                error!("{}", e);
                 std::process::exit(1);
             }
         }
