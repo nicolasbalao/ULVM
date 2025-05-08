@@ -2,6 +2,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use colored::Colorize;
 
+use crate::lang::node::version::NodeVersion;
+
 /// Icônes standardisées
 pub const ICON_SUCCESS: &str = "✅️";
 pub const ICON_ERROR: &str = "❌";
@@ -38,6 +40,38 @@ pub fn info(msg: &str) {
 pub fn verbose(msg: &str) {
     if is_verbose() {
         println!("{:<3}", msg.italic());
+    }
+}
+
+// TODO refactor this
+pub fn display_versions(versions: Vec<&NodeVersion>) {
+    println!(
+        "\n{:<12} {:<12} {:<10} {}",
+        "Version".bold().cyan(),
+        "Date".bold().cyan(),
+        "Status".bold().cyan(),
+        "Codename".bold().cyan()
+    );
+    println!();
+
+    for version in &versions {
+        if version.is_installed {
+            println!(
+                "{:<12} {:<12} {:<10} {}",
+                version.version.cyan(),
+                version.date.cyan(),
+                version.status.cyan(),
+                version.lts.clone().unwrap_or_default().cyan()
+            );
+        } else {
+            println!(
+                "{:<12} {:<12} {:<10} {}",
+                version.version,
+                version.date,
+                version.status,
+                version.lts.clone().unwrap_or_default()
+            );
+        }
     }
 }
 
