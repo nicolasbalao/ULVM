@@ -1,7 +1,9 @@
 pub mod command;
 pub mod node;
+pub mod rust;
 use clap::{Parser, Subcommand, command};
 use node::{NodeArgs, NodeCommands};
+use rust::{RustArgs, RustCommands};
 
 use crate::{error, lang, ui::set_verbose};
 
@@ -20,6 +22,7 @@ pub struct Cli {
 pub enum Commands {
     Node(NodeArgs),
     Setup,
+    Rust(RustArgs),
 }
 
 pub fn run() {
@@ -66,5 +69,13 @@ pub fn run() {
                 std::process::exit(1);
             }
         }
+        Commands::Rust(rust_args) => match rust_args.command {
+            RustCommands::Install { version } => {
+                if let Err(e) = lang::rust::command::install_rust::execute(version) {
+                    error!("{}", e);
+                    std::process::exit(1)
+                }
+            }
+        },
     }
 }
