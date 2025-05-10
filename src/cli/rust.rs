@@ -13,4 +13,5 @@ pub enum RustCommands {
         #[arg()]
         version: Option<String>,
     },
+    List,
 }

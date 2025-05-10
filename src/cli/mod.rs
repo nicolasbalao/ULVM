@@ -76,6 +76,9 @@ pub fn run() {
                     std::process::exit(1)
                 }
             }
+            RustCommands::List => {
+                lang::rust::command::list_rust::execute();
+            }
         },
     }
 }

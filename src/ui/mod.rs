@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use colored::Colorize;
 
-use crate::lang::node::version::NodeVersion;
+use crate::lang::{node::version::NodeVersion, rust::command::list_rust::RustVersion};
 
 /// Icônes standardisées
 pub const ICON_SUCCESS: &str = "✅️";
@@ -44,7 +44,7 @@ pub fn verbose(msg: &str) {
 }
 
 // TODO refactor this
-pub fn display_versions(versions: Vec<&NodeVersion>) {
+pub fn display_node_versions(versions: Vec<&NodeVersion>) {
     println!(
         "\n{:<12} {:<12} {:<10} {}",
         "Version".bold().cyan(),
@@ -71,6 +71,19 @@ pub fn display_versions(versions: Vec<&NodeVersion>) {
                 version.status,
                 version.lts.clone().unwrap_or_default()
             );
+        }
+    }
+}
+
+pub fn display_rust_version(versions: Vec<&RustVersion>) {
+    println!("\n{:<12}", "Version".bold().cyan(),);
+    println!();
+
+    for v in versions {
+        if v.is_installed() {
+            println!("{:<12}", v.name.cyan());
+        } else {
+            println!("{:<12}", v.name);
         }
     }
 }

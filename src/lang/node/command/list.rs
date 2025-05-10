@@ -1,6 +1,6 @@
 use crate::{
     lang::node::version::{NodeVersion, NodeVersions},
-    ui::display_versions,
+    ui::display_node_versions,
 };
 
 fn fetch_version() -> Result<Vec<NodeVersion>, Box<dyn std::error::Error>> {
@@ -20,7 +20,7 @@ pub fn remote_execute() -> Result<(), Box<dyn std::error::Error>> {
 
     lts_versions.insert(0, versions.latest_current().unwrap());
 
-    display_versions(lts_versions);
+    display_node_versions(lts_versions);
 
     Ok(())
 }
@@ -32,7 +32,7 @@ pub fn all_remote_execute() -> Result<(), Box<dyn std::error::Error>> {
     node_versions.process_versions()?;
 
     let versions = node_versions.versions.iter().collect();
-    display_versions(versions);
+    display_node_versions(versions);
 
     Ok(())
 }
