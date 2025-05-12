@@ -14,4 +14,9 @@ pub enum RustCommands {
         version: Option<String>,
     },
     List,
+    Use {
+        /// Toolchain name, such as 'stable', 'nightly', '1.8.0', or a custom toolchain name
+        #[arg()]
+        version: String,
+    },
 }

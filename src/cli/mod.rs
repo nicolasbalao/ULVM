@@ -79,6 +79,12 @@ pub fn run() {
             RustCommands::List => {
                 lang::rust::command::list_rust::execute();
             }
+            RustCommands::Use { version } => {
+                if let Err(e) = lang::rust::command::use_rust::execute(&version) {
+                    error!("{}", e);
+                    std::process::exit(1)
+                };
+            }
         },
     }
 }
