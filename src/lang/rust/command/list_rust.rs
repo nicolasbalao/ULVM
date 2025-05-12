@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::{lang::rust::fs_rust::find_rust_installed_versions, ui::display_rust_version, warn};
+use crate::{lang::rust::fs_rust::find_rust_installed_versions, ui::display_rust_version};
 
 #[derive(Deserialize, Debug)]
 pub struct RustVersion {
@@ -15,8 +15,6 @@ impl RustVersion {
 }
 
 pub fn execute() {
-    warn!("Not implemented yet");
-
     let http_client = reqwest::blocking::Client::new();
     let json = http_client
         .get(" https://api.github.com/repos/rust-lang/rust/tags")
