@@ -19,4 +19,8 @@ pub enum RustCommands {
         #[arg()]
         version: String,
     },
+    Uninstall {
+        #[arg()]
+        version: String,
+    },
 }

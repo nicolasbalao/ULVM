@@ -85,6 +85,12 @@ pub fn run() {
                     std::process::exit(1)
                 };
             }
+            RustCommands::Uninstall { version } => {
+                if let Err(e) = lang::rust::command::uninstall_rust::execute(&version) {
+                    error!("{}", e);
+                    std::process::exit(1)
+                }
+            }
         },
     }
 }
