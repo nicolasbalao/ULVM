@@ -1,4 +1,4 @@
-use std::{io, process::Command};
+use std::{fs, io, path::Path, process::Command};
 
 use thiserror::Error;
 
@@ -22,9 +22,9 @@ pub enum InstallRustError {
 
     #[error("Rust n'est pas installé, exécutez d'abord `ulvm rust install`")]
     RustNotInstalled,
+    #[error("Fail to write env file for rust")]
+    FailedToWriteEnvFile(io::Error),
 }
-
-// TODO: make wrapper for using commands with error handling avoid duplicate code
 
 pub fn execute(version: Option<String>) -> Result<(), InstallRustError> {
     match version {
@@ -34,18 +34,14 @@ pub fn execute(version: Option<String>) -> Result<(), InstallRustError> {
 }
 
 fn install_rust_version(version: &str) -> Result<(), InstallRustError> {
-    let (rustup_home, cargo_home) = install_rust_common_dirs()?;
-
     if !is_rust_installed().unwrap_or(false) {
         return Err(InstallRustError::RustNotInstalled);
     }
 
     info!("Installing Rust toolchain version: {}", version);
-    let status = Command::new("sh")
-        .env("RUSTUP_HOME", &rustup_home)
-        .env("CARGO_HOME", &cargo_home)
-        .arg("-c")
-        .arg(format!("rustup install {}", version))
+    let status = Command::new("rustup")
+        .arg("install")
+        .arg(version)
         .status()?;
 
     if !status.success() {
@@ -65,13 +61,33 @@ fn install_rust_toolchain() -> Result<(), InstallRustError> {
         .env("RUSTUP_HOME", &rustup_home)
         .env("CARGO_HOME", &cargo_home)
         .arg("-c")
-        .arg("curl https://sh.rustup.rs -sSf | sh -s -- -y")
+        .arg("curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path")
         .status()?;
 
     if !status.success() {
         return Err(InstallRustError::RustupFailed(status.code().unwrap_or(-1)));
     }
+
+    write_rust_ulvm_env_file(&rustup_home, &cargo_home)
+        .map_err(InstallRustError::FailedToWriteEnvFile)?;
+
+    success!("Env file for rust successfully created");
     success!("Rustup installed successfully in {}", rustup_home.display());
 
     Ok(())
+}
+
+fn write_rust_ulvm_env_file(rustup_home: &Path, cargo_home: &Path) -> Result<(), std::io::Error> {
+    let ulvm_rust_dir = rustup_home.parent().unwrap_or_else(|| Path::new("."));
+    let env_file_path = ulvm_rust_dir.join("rust.env");
+
+    let contents = format!(
+        ". {cargo}/env\n\
+        export RUSTUP_HOME={rustup}\n\
+        export CARGO_HOME={cargo}",
+        rustup = rustup_home.display(),
+        cargo = cargo_home.display(),
+    );
+
+    fs::write(&env_file_path, contents)
 }

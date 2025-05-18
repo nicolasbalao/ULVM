@@ -22,6 +22,7 @@ pub struct Cli {
 pub enum Commands {
     Node(NodeArgs),
     Setup,
+    /// Wrapper of rustup cli for managing versions
     Rust(RustArgs),
 }
 

@@ -2,14 +2,14 @@ use thiserror::Error;
 
 use crate::{
     info,
-    lang::rust::{RustCliErr, RustupNotInstallErr, is_rust_installed, rust_cli_command},
+    lang::rust::{RustupErr, RustupNotInstallErr, is_rust_installed, rustup_cli},
     success,
 };
 
 #[derive(Debug, Error)]
 pub enum UseRustErr {
     #[error("Error: {0}")]
-    RustCli(#[from] RustCliErr),
+    RustCli(#[from] RustupErr),
 
     #[error("Error: {0}")]
     RustupNotInstal(#[from] RustupNotInstallErr),
@@ -17,8 +17,9 @@ pub enum UseRustErr {
 
 pub fn execute(version: &str) -> Result<(), UseRustErr> {
     info!("Setting up rust {} as current", version);
-    rust_cli_command(format!("rustup default {}", version).as_str())?;
     is_rust_installed()?;
+
+    rustup_cli(["default", version])?;
     success!("Rust {} is now the default version", version);
     Ok(())
 }

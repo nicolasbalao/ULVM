@@ -1,10 +1,10 @@
 use crate::{
-    lang::rust::{RustCliErr, rust_cli_command},
+    lang::rust::{RustupErr, rustup_cli},
     success,
 };
 
-pub fn execute(version: &str) -> Result<(), RustCliErr> {
-    rust_cli_command(format!("rustup toolchain uninstall {}", &version).as_str())?;
+pub fn execute(version: &str) -> Result<(), RustupErr> {
+    rustup_cli(["toolchain", "uninstall", version])?;
     success!("Rustup toolchain {} is uninstalled", version);
     Ok(())
 }
