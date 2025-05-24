@@ -3,7 +3,6 @@
 BUILD_DIR=build
 PACKAGE_DIR=package
 BIN_BASE_CLI_NAME=ulvm
-BIN_BASE_SHIM_NAME=ulvm_shim
 CARGO_BUILD_DIST=target/release
 CARGO_BUILD_DIST_WINDOWS=target/x86_64-pc-windows-gnu/release
 
@@ -28,7 +27,6 @@ build:
 
 	mkdir -p $(BUILD_DIR)
 	cp $(CARGO_BUILD_DIST)/$(BIN_BASE_CLI_NAME) $(BUILD_DIR)/
-	cp $(CARGO_BUILD_DIST)/$(BIN_BASE_SHIM_NAME) $(BUILD_DIR)/
 	cp scripts/install.sh $(BUILD_DIR)/
 	cp scripts/uninstall.sh $(BUILD_DIR)/
 
@@ -40,7 +38,6 @@ build-windows:
 
 	mkdir -p $(BUILD_DIR)
 	cp $(CARGO_BUILD_DIST_WINDOWS)/$(BIN_BASE_CLI_NAME).exe $(BUILD_DIR)/
-	cp $(CARGO_BUILD_DIST_WINDOWS)/$(BIN_BASE_SHIM_NAME).exe $(BUILD_DIR)/
 
 	cp scripts/install.bat $(BUILD_DIR)/
 	cp scripts/uninstall.bat $(BUILD_DIR)/

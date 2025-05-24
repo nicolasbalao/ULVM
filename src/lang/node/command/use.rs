@@ -1,5 +1,3 @@
-use std::env;
-
 use thiserror::Error;
 
 use crate::{
@@ -9,11 +7,10 @@ use crate::{
             ulvm_config::{NodeConfig, UlvmConfig},
         },
         fs::{
-            self as ulvm_fs, FsError, create_exec_symlink, ensure_node_versions_dir,
-            ensure_ulvm_bin_dir,
+            self as ulvm_fs, FsError, create_symlink_dir, ensure_node_dir, ensure_node_versions_dir,
         },
     },
-    info, platform, success, verbose, warn,
+    info, success, verbose,
 };
 
 use super::install::{self, InstallError};
@@ -28,6 +25,9 @@ pub enum UseError {
 
     #[error("Error while installation: {0}")]
     Installation(#[from] InstallError),
+
+    #[error("Creating symlink failed: {0}")]
+    SymlinkCreation(#[from] std::io::Error),
 }
 
 pub fn execute(version: &str) -> Result<(), UseError> {
@@ -64,23 +64,11 @@ pub fn execute(version: &str) -> Result<(), UseError> {
 
     let version_path = ensure_node_versions_dir()?.join(version);
     verbose!("Creating symlink");
-    create_exec_symlink(&version_path)?;
+
+    let ulvm_node_dir = ensure_node_dir()?.join("bin");
+    create_symlink_dir(&ulvm_node_dir, &version_path.join("bin"))?;
 
     success!("Now using Node.js version: {}", version);
 
-    let path_env_var = env::var("PATH").unwrap();
-
-    let ulvm_bin_dir = ensure_ulvm_bin_dir()?;
-    if !path_env_var.contains(ulvm_bin_dir.to_str().unwrap()) {
-        warn!(
-            "Dont forget to add {} to your $PATH",
-            ulvm_bin_dir.display()
-        );
-        if platform::detect_plateform() == "win" {
-            info!("$env:PATH = \"{};$env:PATH\"", ulvm_bin_dir.display());
-        } else {
-            info!("export PATH=\"{}:$PATH\"", ulvm_bin_dir.display())
-        }
-    }
     Ok(())
 }

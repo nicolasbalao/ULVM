@@ -1,4 +1,3 @@
-pub mod command;
 pub mod node;
 pub mod rust;
 use clap::{Parser, Subcommand, command};
@@ -21,7 +20,6 @@ pub struct Cli {
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     Node(NodeArgs),
-    Setup,
     /// Wrapper of rustup cli for managing versions
     Rust(RustArgs),
 }
@@ -64,12 +62,6 @@ pub fn run() {
                 }
             }
         },
-        Commands::Setup => {
-            if let Err(e) = command::setup::execute() {
-                error!("{}", e);
-                std::process::exit(1);
-            }
-        }
         Commands::Rust(rust_args) => match rust_args.command {
             RustCommands::Install { version } => {
                 if let Err(e) = lang::rust::command::install_rust::execute(version) {

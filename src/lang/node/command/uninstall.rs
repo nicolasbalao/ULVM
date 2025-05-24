@@ -4,8 +4,8 @@ use crate::{
     core::{
         config::{errors::UlvmConfigError, ulvm_config::UlvmConfig},
         fs::{
-            FsError, ensure_node_versions_dir, remove_archive, remove_symlink_for_version,
-            remove_version_dir,
+            FsError, ensure_node_versions_dir, ensure_ulvm_node_bin_dir, remove_archive,
+            remove_symlink, remove_version_dir,
         },
     },
     info, success, verbose,
@@ -45,7 +45,8 @@ pub fn execute(version: &str, hard: bool) -> Result<(), UninstallError> {
         verbose!("Node.js {} is your current version", &version);
         base_config.node = None;
         base_config.save()?;
-        remove_symlink_for_version(version)?;
+        let ulvm_node_bin_dir = ensure_ulvm_node_bin_dir()?;
+        remove_symlink(&ulvm_node_bin_dir)?;
     }
 
     // If hard delete archive
